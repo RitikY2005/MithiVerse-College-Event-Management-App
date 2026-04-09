@@ -54,7 +54,7 @@ const HeroSection = () => {
               lineHeight: '1.2',
             }}
           >
-            Create{' '}
+            Discover{' '}
             <span
               style={{
                 background: primaryGradient,
@@ -78,7 +78,7 @@ const HeroSection = () => {
               fontFamily: 'Raleway, sans-serif',
             }}
           >
-            The ultimate platform for organizing, managing, and promoting events that leave lasting impressions
+            The ultimate platform for finding,creating, managing, and promoting events that leave lasting impressions
           </p>
 
           {/* CTA Buttons */}
