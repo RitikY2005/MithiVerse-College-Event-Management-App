@@ -14,11 +14,14 @@ import {
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
+
 const Promotion = () => {
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState('');
-  const [emailList, setEmailList] = useState('');
+  const [emailList, setEmailList] = useState([]);
+  const [email,setEmail]=useState('');
   const [loading, setLoading] = useState(true);
+  const [sendingEmail,setSendingEmail]=useState(false);
 
   const API_URL = import.meta.env.VITE_API_URL;
   const BASE_URL =
@@ -46,7 +49,10 @@ const Promotion = () => {
     const fetchEvents = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/events`);
-        const data = response?.data?.data || [];
+        let data = response?.data?.data || [];
+
+        // remove the past events 
+        data=data.filter(event=> event.status=="upcoming");
         setEvents(data);
 
         if (data.length > 0) {
@@ -109,37 +115,75 @@ const Promotion = () => {
     toast.success('Event link copied!');
   };
 
+  // ===============Handle Email Logic Here =====================
+
+  const handleEmail=(e)=>{
+     setEmail(e.target.value);
+     if(e.target.value.includes(',')){
+        const email=e.target.value.split(',')[0].trim();
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if(emailRegex.test(email)){
+          setEmailList((prev)=>[...prev,email]);
+          setEmail('');
+        } else {
+          toast.error('Invalid email format');
+          setEmail('');
+        }
+     }
+     
+  }
+
+  const removeEmail=(index)=>{
+    setEmailList((prev)=> prev.filter((_,i)=> i!==index));
+  }
+
+  
   const sendEmailInvites = (e) => {
+    setSendingEmail(true);
     e.preventDefault();
 
     if (!selectedEventData) {
       toast.error('Please select an event');
+      setSendingEmail(false);
       return;
     }
 
-    const emails = emailList
-      .split(',')
-      .map((email) => email.trim())
-      .filter((email) => email.length > 0);
-
-    const invalidEmails = emails.filter(
-      (email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    );
-
-    if (!emails.length) {
+    
+    
+    if (!emailList.length) {
       toast.error('Please enter at least one email');
+      setSendingEmail(false);
       return;
     }
 
-    if (invalidEmails.length) {
-      toast.error('Some email addresses are invalid');
-      return;
+    const eventSource=new EventSource(`${API_URL}/api/emails/send-invites?eventId=${selectedEvent}&emails=${encodeURIComponent(emailList.join(','))}`,{withCredentials:true});
+
+    eventSource.onmessage = (event) => {
+      const {success,message,action}=JSON.parse(event.data);
+      
+      if(success){
+        toast.success(message);
+      }
+
+      if(action==="complete"){
+        toast.success('Email sending process completed!');
+        eventSource.close();
+        setSendingEmail(false);
+      }
     }
 
-    toast.success(`Invitations prepared for ${emails.length} recipients!`);
-    setEmailList('');
+    eventSource.onerror=(error)=>{
+      toast.error('An error occurred while sending emails');
+      eventSource.close();
+      setSendingEmail(false);
+     }
+
+
+    setEmailList([]);
+   
   };
 
+  
   // =========================
   // Loading States
   // =========================
@@ -225,38 +269,7 @@ const Promotion = () => {
           </select>
         </div>
 
-        {/* Analytics */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {[FaEye, FaUsers, FaChartLine].map((Icon, index) => (
-            <div
-              key={index}
-              style={{
-                background: colors.cardGradient,
-                border: `1px solid ${colors.borderSoft}`
-              }}
-              className="rounded-xl p-6 text-center"
-            >
-              <div
-                style={{
-                  background: colors.iconGradient,
-                  width: 50,
-                  height: 50,
-                  borderRadius: '50%',
-                  margin: '0 auto 12px auto',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <Icon color="#FFFFFF" />
-              </div>
-              <h3 style={{ color: colors.textWhite }} className="text-xl font-bold">—</h3>
-              <p style={{ color: colors.textMuted }} className="text-sm">
-                {index === 0 ? 'Event Views' : index === 1 ? 'Registrations' : 'Conversion Rate'}
-              </p>
-            </div>
-          ))}
-        </div>
+        
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
@@ -334,10 +347,18 @@ const Promotion = () => {
               </h2>
             </div>
 
-            <form onSubmit={sendEmailInvites} className="space-y-4">
+            <form onSubmit={sendEmailInvites} className="space-y-4 flex flex-col">
+              <div className="flex flex-row h-auto w-full flex-wrap justify-start px-3 py-2 text-sm gap-2 bg-[#1E1E2F] border border-[rgba(255,255,255,0.08)]" >
+              { emailList.length >0 && emailList.map((email,index)=>{
+                 return <div key={index} className="bg-[#1DE9B6] px-3 py-1 rounded-lg flex items-center justify-center gap-2">
+                    <span>{email}</span>
+                    <button className='text-red-500 font-bold ' onClick={() => removeEmail(index)}>x</button>
+                  </div>
+              })}
+              </div>
               <textarea
-                value={emailList}
-                onChange={(e) => setEmailList(e.target.value)}
+                value={email}
+                onChange={(e) => handleEmail(e)}
                 placeholder="Enter comma separated emails"
                 rows="6"
                 style={{
@@ -351,14 +372,16 @@ const Promotion = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.98 }}
-                type="submit"
+                onClick={sendEmailInvites}
                 style={{
                   background: colors.primaryGradient,
                   color: '#FFFFFF'
                 }}
                 className="w-full rounded-lg px-6 py-3 font-semibold"
+                disabled={sendingEmail}
+
               >
-                Send Invitations
+                {sendingEmail ? 'Sending...' : 'Send Invitations'}
               </motion.button>
             </form>
 

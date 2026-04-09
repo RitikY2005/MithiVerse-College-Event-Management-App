@@ -194,18 +194,18 @@ const MyRegistrations = () => {
                     {/* Payment */}
                     <div className="flex justify-between text-sm">
                       <span style={{ color: colors.textMuted }}>
-                        Payment:
+                        Payment: 
                       </span>
                       <span
                         style={{
                           color:
-                            registration.paymentStatus === "paid"
-                              ? colors.success
-                              : colors.warning,
+                            registration.price === 0
+                              ? colors.warning
+                              : colors.success,
                           fontWeight: 500,
                         }}
                       >
-                        {registration.paymentStatus}
+                        {registration.price.toFixed(2)}
                       </span>
                     </div>
 

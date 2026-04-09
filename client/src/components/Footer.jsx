@@ -17,7 +17,7 @@ const Footer = () => {
       
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '48px 16px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(1, 1fr)', gap: '32px', 
-                      '@media(min-width:768px)': { gridTemplateColumns: 'repeat(4, 1fr)' } }}>
+                      '@media(minWidth:768px)': { gridTemplateColumns: 'repeat(4, 1fr)' } }}>
           {/* Brand Section */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

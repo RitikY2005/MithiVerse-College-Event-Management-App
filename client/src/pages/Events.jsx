@@ -32,6 +32,12 @@ const Events = () => {
     try {
       setLoading(true);
       const { data } = await axios.get(`${API_URL}/api/events?search=${searchTerm}`);
+      // sort the events before storing 
+      data.data.sort((a,b)=>{
+        if(a.status=="upcoming") return -1;
+        if(b.status=="upcoming") return 1;
+        return 0;
+      })
       setEvents(data.data);
     } catch (error) {
       toast.error('Failed to load events');

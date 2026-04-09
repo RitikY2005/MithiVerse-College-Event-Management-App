@@ -1,11 +1,13 @@
 import { motion } from 'framer-motion';
 import { FaCalendar, FaMapMarkerAlt, FaUsers, FaTicketAlt } from 'react-icons/fa';
 import { format } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 const EventCard = ({ event, onRegister, isRegistering }) => {
   const isCompleted = event.status === 'completed';
   const isFull = (event.registeredUsers?.length || 0) >= event.capacity;
   const isDisabled = isCompleted || isFull || isRegistering;
+  const navigator=useNavigate();
 
   const getButtonText = () => {
     if (isCompleted) return 'Event Completed';
@@ -25,6 +27,11 @@ const EventCard = ({ event, onRegister, isRegistering }) => {
   const successColor = '#4CAF50';
   const errorColor = '#F44336';
   const disabledColor = '#555555';
+
+
+  const redirectToDetails=()=>{
+    navigator('/events/details',{state:{event}});
+  }
 
   return (
     <motion.div
@@ -104,7 +111,7 @@ const EventCard = ({ event, onRegister, isRegistering }) => {
 
           <button
             disabled={isDisabled}
-            onClick={() => onRegister(event._id)}
+            onClick={() => redirectToDetails()}
             style={{
               padding: '12px 24px',
               borderRadius: '12px',

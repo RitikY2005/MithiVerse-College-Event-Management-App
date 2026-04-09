@@ -1,12 +1,65 @@
 import { motion } from 'framer-motion';
 import { FaMapMarkerAlt, FaEnvelope, FaPhone, FaFacebook, FaTwitter, FaInstagram, FaLinkedin } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import { useState } from 'react';
 
 const Contact = () => {
-  const handleSubmit = (e) => {
+
+  const [userInput, setUserInput] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  });
+  const [isLoading,setIsLoading]=useState(false);
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  const handleInputChange = (e) => {
+    setUserInput({
+      ...userInput,
+      [e.target.name]: e.target.value
+    });
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast.success("Message sent successfully! We'll get back to you soon.");
-    e.target.reset();
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/api/emails/send-feedback`, {
+        method: 'POST',
+        credentials: 'include',
+        body: JSON.stringify(userInput),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data =await  res.json();
+      
+      if (data.success) {
+        toast.success('Feedback submitted successfully');
+        setUserInput({
+          name: '',
+          email: '',
+          subject: '',
+          message: ''
+        });
+        setIsLoading(false);
+        return;
+      } else {
+        toast.error(data.message || 'Email couldnt be sent');
+        setIsLoading(false);
+        return;
+      }
+
+
+    } catch (err) {
+      toast.error(err.message || "Could not send your feedback");
+      setIsLoading(false);
+      return;
+    }
+
+
   };
 
   const textWhite = '#FFFFFF';
@@ -32,9 +85,10 @@ const Contact = () => {
           </p>
         </motion.div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '48px', maxWidth: '100%', margin: '0 auto', 
-                      '@media(min-width:1024px)': { gridTemplateColumns: '1fr 1fr' } 
-                    }}>
+        <div style={{
+          display: 'grid', gridTemplateColumns: '1fr', gap: '48px', maxWidth: '100%', margin: '0 auto',
+          '@media(min-width:1024px)': { gridTemplateColumns: '1fr 1fr' }
+        }}>
           {/* Contact Form */}
           <div style={{ background: bgGlass, borderRadius: '24px', padding: '32px' }}>
             <h2 style={{ fontSize: '24px', fontWeight: '700', color: textWhite, marginBottom: '24px', fontFamily: 'Montserrat' }}>Send us a Message</h2>
@@ -44,6 +98,9 @@ const Contact = () => {
                 <input
                   type="text"
                   required
+                  onChange={handleInputChange}
+                  name="name"
+                  value={userInput.name}
                   placeholder="John Doe"
                   style={{
                     width: '100%',
@@ -61,6 +118,9 @@ const Contact = () => {
                 <input
                   type="email"
                   required
+                  onChange={handleInputChange}
+                  name="email"
+                  value={userInput.email}
                   placeholder="john@example.com"
                   style={{
                     width: '100%',
@@ -78,6 +138,9 @@ const Contact = () => {
                 <input
                   type="text"
                   required
+                  onChange={handleInputChange}
+                  name="subject"
+                  value={userInput.subject}
                   placeholder="How can we help?"
                   style={{
                     width: '100%',
@@ -95,6 +158,9 @@ const Contact = () => {
                 <textarea
                   required
                   rows="5"
+                  onChange={handleInputChange}
+                  name="message"
+                  value={userInput.message}
                   placeholder="Tell us more about your inquiry..."
                   style={{
                     width: '100%',
@@ -112,6 +178,7 @@ const Contact = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 type="submit"
+                disabled={isLoading}
                 style={{
                   width: '100%',
                   background: primaryGradient,
@@ -124,7 +191,7 @@ const Contact = () => {
                   border: 'none',
                 }}
               >
-                Send Message
+                {isLoading ? 'sending...':'send message'}
               </motion.button>
             </form>
           </div>
@@ -150,7 +217,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 style={{ color: textWhite, fontWeight: '600', marginBottom: '4px' }}>Email</h3>
-                    <a href="mailto:mahabriarman@gmail.com" style={{ color: '#00BFA6' }}>mahabriarman@gmail.com</a><br/>
+                    <a href="mailto:mahabriarman@gmail.com" style={{ color: '#00BFA6' }}>mahabriarman@gmail.com</a><br />
                     <a href="mailto:mahabriarman+support@gmail.com" style={{ color: '#00BFA6' }}>mahabriarman+support@gmail.com</a>
                   </div>
                 </div>
@@ -160,7 +227,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h3 style={{ color: textWhite, fontWeight: '600', marginBottom: '4px' }}>Phone</h3>
-                    <a href="tel:+919529873656" style={{ color: '#00BFA6' }}>+91 9529873656</a><br/>
+                    <a href="tel:+919529873656" style={{ color: '#00BFA6' }}>+91 9529873656</a><br />
                     <a href="tel:+919529873657" style={{ color: '#00BFA6' }}>+91 9529873657</a>
                   </div>
                 </div>
