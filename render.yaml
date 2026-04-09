@@ -1,6 +1,6 @@
 services:
   # 🔹 Frontend (Vite React)
-  - type: static_site
+  - type: web
     name: mithiverse-frontend
     rootDir: client
     buildCommand: npm install && npm run build
@@ -14,7 +14,7 @@ services:
         value: https://mithiverse-backend.onrender.com
 
   # 🔹 Backend (Express)
-  - type: web_service
+  - type: web
     name: mithiverse-backend
     rootDir: server
     buildCommand: npm install
