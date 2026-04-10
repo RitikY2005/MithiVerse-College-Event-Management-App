@@ -160,11 +160,11 @@ const ManageEvents = () => {
         {!loading && (
           <>
             {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
               <StatCard icon={FaCalendarAlt} title="Total Events" value={events.length} colors={colors} />
               <StatCard icon={FaUsers} title="Total Registrations" value={totalRegistrations} colors={colors} />
               <StatCard icon={FaDollarSign} title="Total Revenue" value={`₹${totalRevenue.toLocaleString('en-IN')}`} colors={colors} />
-              <StatCard icon={FaChartLine} title="Avg. Attendance" value={avgAttendance} colors={colors} />
+              
             </div>
 
             {/* Events Table */}
